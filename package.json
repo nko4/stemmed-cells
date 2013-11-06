@@ -1,0 +1,19 @@
+{
+  "name": "nko4-stemmed-cells",
+  "version": "0.0.0",
+  "description": "Stemmed Cells",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:nko4/stemmed-cells.git"
+  },
+  "dependencies": {
+    "nko": "*"
+  },
+  "engines": {
+    "node": "0.10.x"
+  }
+}
