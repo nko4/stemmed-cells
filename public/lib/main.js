@@ -7,9 +7,13 @@ domready(function () {
 	var _pageData = {
 		files: [],
 		doc: {},
+		docProperties: {},
 		display: {
 			showInfo: false,
 			showFilter: true
+		},
+		keys: function(obj) {
+			return Object.keys(obj);
 		}
 	};
 
@@ -19,6 +23,7 @@ domready(function () {
 	var _ee = new EventEmitter2();
 
 	// Setup some listeners
+
 	_ee.on('getDocs', function(data) {
 		console.log('Get Documents');	
 		if (!data) {
@@ -95,10 +100,23 @@ domready(function () {
 		});
 	}
 	
-	getTemplates(function() {
-		console.log('ractive init');
-		doDZ();
-		_ee.emit('getDocs');
+	function getDocProperties(callback) {
+		$.get('/properties', function(data) {
+			_pageData.docProperties = data;
+			_ee.emit('GotDocProperties');
+			callback();
+		});
+	}
+
+	_ee.emit('getDocProperties');
+
+	
+	getDocProperties(function() {
+		getTemplates(function() {
+			console.log('ractive init');
+			doDZ();
+			_ee.emit('getDocs');
+		});
 	});
 
 	var uploadMap = {};
@@ -106,11 +124,12 @@ domready(function () {
 	function doDZ() {
 		var myDropzone = new Dropzone("div.dropzone", {
 			url: "/file/post",
+			dictDefaultMessage: '',
 			maxFilesize: 4, // MB
 			createImageThumbnails: true,
 			params: {
-				category: 'the special one',
-				type: 'some kind of type'
+				Category: 'a',
+				Type: 't1'
 			},
 			accept: function(file, done) {
 				if (file.name == "justinbieber.jpg") {
@@ -123,25 +142,39 @@ domready(function () {
 
 		myDropzone.on('thumbnail', function(file, url) {
 			console.log('***** thumbnail');
-			uploadMap[file.name] = {
-				src: url
-			};
+			save(file, url);
 		});
+
 		myDropzone.on('sending', function(file, xhr, formdata) {
 			console.log(formdata);
 		});
+
 		myDropzone.on('success', function(file, res) {
-			console.log('***** success');
-			console.log(file);
-			console.log(uploadMap[file.name]);
-			console.log(res.id);
-			// Save thumbnail data
-			if (uploadMap[file.name]) {
-				$.post('/file/thumbnail/' + res.id, uploadMap[file.name], function(res) {
-					console.log(res);
-				})
-			}
+			console.log('***** success');	
+			save(file, null, res);
 		});
+		function save(file, url, res) {
+			(function() {
+				uploadMap[file.name] = uploadMap[file.name] || {};
+				if (url) {
+					uploadMap[file.name].src = url;	
+				}
+				if (res) {
+					uploadMap[file.name].obj = res;	
+				}
+				if (uploadMap[file.name].obj && uploadMap[file.name].src) {
+					var src = uploadMap[file.name].src;
+					uploadMap[file.name] = uploadMap[file.name].obj;
+					uploadMap[file.name].src = src;
+
+					$.post('/file/thumbnail/' + uploadMap[file.name].id, uploadMap[file.name], function(res) {
+						file.previewElement.style.display = 'none';
+						_pageData.files.push(res);
+						_r.set('files',_pageData.files);
+					});	
+				}
+			})();
+		}
 	}
 
 	function startGI() {

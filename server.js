@@ -11,6 +11,37 @@ var express = require('express')
   , uuid = require('node-uuid')
   ;
 
+var gFileProperties = {
+  'Name': {
+    type: 'input'
+  },
+  'Category': {
+    type: 'input'
+  },
+  'Type': {
+    type: 'input'
+  }
+  // 'Category': {
+  //   type: 'select',
+  //   options: [
+  //     { option: '', value: ''},
+  //     { option: 'Category 1', value: 'a'},
+  //     { option: 'Category 2', value: 'b'}
+  //   ]
+  // },
+  // 'Type': {
+  //   type: 'select',
+  //   options: [
+  //     { option: '', value: ''},
+  //     { option: 'Type 1', value: 't1'},
+  //     { option: 'Type 2', value: 't2'}
+  //   ]
+  // },
+  // 'Date': {
+  //   type: 'date'
+  // }
+};
+
 var gFileStore = {};
 
 app.configure(function(){
@@ -35,6 +66,10 @@ app.get('/test', function(req, res){
   res.end(body);
 });
 
+app.get('/properties', function(req, res){
+  res.send(gFileProperties);
+});
+
 app.get('/files/_all', function(req, res){
   var results = [];
   for (var key in gFileStore) {
@@ -51,7 +86,7 @@ app.post('/file/thumbnail/:id', function(req, res){
   if (gFileStore[req.params.id]) {
     gFileStore[req.params.id].thumbnail = req.body;
   }
-  res.send(200);
+  res.send(gFileStore[req.params.id]);
 });
 
 // Routes
@@ -68,9 +103,7 @@ app.post('/file/post', function(req, res) {
     properties: req.body
   };
   
-  res.send({
-    id: id
-  });
+  res.send(gFileStore[id]);
 
   //res.redirect("back");
   
