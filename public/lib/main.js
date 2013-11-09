@@ -10,7 +10,14 @@ domready(function () {
 		docProperties: {},
 		display: {
 			showInfo: false,
-			showFilter: true
+			showFilter: false,
+			view: {
+				grid: true
+			},
+			save: {
+				label: 'Save',
+				icon: 'fa-save'
+			}
 		},
 		keys: function(obj) {
 			return Object.keys(obj);
@@ -56,6 +63,20 @@ domready(function () {
 		_r.set('display.showInfo', _pageData.display.showInfo);
 	});
 
+	_ee.on('saveDocInfo', function(data) {
+		$.post('/file/' + data.id, data, function(data) {
+			_ee.emit('savedDocInfo', data);	
+		});
+	});
+
+	_ee.on('savedDocInfo', function(data) {
+		setTimeout(function() {
+			_pageData.display.save.label = 'Save';
+			_pageData.display.save.icon = 'fa-save';
+			_r.set('display.save', _pageData.display.save);
+		}, 1000);
+	});
+
 	// Lets get some templates
 	function getTemplates(callback) {
 		$.get('/template/files.html', function(data) {
@@ -79,7 +100,7 @@ domready(function () {
 					} else {
 						_ee.emit('getDocInfo', {
 							id: id
-						});	
+						});
 					}
 					
 				},
@@ -87,12 +108,33 @@ domready(function () {
 					_pageData.display.showFilter = (_pageData.display.showFilter? false: true);
 					_r.set('display.showFilter', _pageData.display.showFilter);
 				},
-				cogClick: function(event) {
+				gridView: function(event) {
 					
 				},
 				infoClose: function(event) {
 					_pageData.display.showInfo = false;
 					_r.set('display.showInfo', _pageData.display.showInfo);
+				},
+				infoLock: function(event) {
+					_pageData.doc.properties.lock = true;
+					_r.set('doc', _pageData.doc);
+					_ee.emit('saveDocInfo', _pageData.doc);
+				},
+				infoSave: function(event) {
+					console.log('save data');
+					_pageData.display.save.label = 'Saving';
+					_pageData.display.save.icon = 'fa-spinner fa-spin';
+					_r.set('display.save', _pageData.display.save);
+
+					var newProperties = {};
+					for (var i=0; i<event.node.form.length; i++) {
+						var ele = event.node.form[i];
+						if (ele.id!=="") {
+							_pageData.doc.properties[ele.id] = ele.value;
+						}
+					}
+					_r.set('doc', _pageData.doc);
+					_ee.emit('saveDocInfo', _pageData.doc);
 				}
 			});
 
@@ -123,7 +165,7 @@ domready(function () {
 
 	function doDZ() {
 		var myDropzone = new Dropzone("div.dropzone", {
-			url: "/file/post",
+			url: "/file/upload",
 			dictDefaultMessage: '',
 			maxFilesize: 4, // MB
 			createImageThumbnails: true,

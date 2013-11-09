@@ -16,27 +16,21 @@ var gFileProperties = {
     type: 'input'
   },
   'Category': {
-    type: 'input'
+    type: 'select',
+    options: [
+      { option: '', value: ''},
+      { option: 'Category 1', value: 'category-1'},
+      { option: 'Category 2', value: 'category-2'}
+    ]
   },
   'Type': {
-    type: 'input'
+    type: 'select',
+    options: [
+      { option: '', value: ''},
+      { option: 'Type 1', value: 'type-1'},
+      { option: 'Type 2', value: 'type-2'}
+    ]
   }
-  // 'Category': {
-  //   type: 'select',
-  //   options: [
-  //     { option: '', value: ''},
-  //     { option: 'Category 1', value: 'a'},
-  //     { option: 'Category 2', value: 'b'}
-  //   ]
-  // },
-  // 'Type': {
-  //   type: 'select',
-  //   options: [
-  //     { option: '', value: ''},
-  //     { option: 'Type 1', value: 't1'},
-  //     { option: 'Type 2', value: 't2'}
-  //   ]
-  // },
   // 'Date': {
   //   type: 'date'
   // }
@@ -90,7 +84,7 @@ app.post('/file/thumbnail/:id', function(req, res){
 });
 
 // Routes
-app.post('/file/post', function(req, res) {
+app.post('/file/upload', function(req, res) {
   console.log(req.files);
   console.log(req.body);
   var id = uuid.v1();
@@ -114,6 +108,14 @@ app.post('/file/post', function(req, res) {
   //   });
   // });
 });
+
+app.post('/file/:id', function(req, res){
+  if (gFileStore[req.params.id]) {
+    gFileStore[req.params.id] = req.body;
+  }
+  res.send(gFileStore[req.params.id]);
+});
+
 
 app.listen(port);
 console.log('Listening on port ' + port);
