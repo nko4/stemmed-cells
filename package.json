@@ -14,7 +14,8 @@
     "nko": "*",
     "express": "*",
     "lodash": "*",
-    "domReady": "*"
+    "domReady": "*",
+    "node-uuid": "*"
   },
   "engines": {
     "node": "0.10.x"
