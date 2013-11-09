@@ -4,10 +4,52 @@ domready(function () {
 
 	console.log('dom ready');
 
-	var myFiles = [];
+	var _pageData = {
+		files: [],
+		doc: {},
+		display: {
+			showInfo: false,
+			showFilter: true
+		}
+	};
 
 	var _template = "";	
-	var r; 
+	var _r;
+
+	var _ee = new EventEmitter2();
+
+	// Setup some listeners
+	_ee.on('getDocs', function(data) {
+		console.log('Get Documents');	
+		if (!data) {
+			$.get('/files/_all', function(data) {
+				_ee.emit('gotDocs', data);
+			});	
+		}
+	});
+
+	_ee.on('gotDocs', function(data) {
+		console.log('Got Documents');	
+		_r.set('files', data);
+	});
+
+
+	_ee.on('getDocInfo', function(data) {
+		$.get('/file/' + data.id, function(data) {
+			_ee.emit('gotDocInfo', data);	
+		});
+	});
+
+	_ee.on('gotDocInfo', function(data) {
+		console.log('Got Document Info');
+	});
+
+	_ee.on('gotDocInfo', function(data) {
+		_pageData.doc = data;
+		_r.set('doc', _pageData.doc);
+		_pageData.display.showInfo = true;
+		_r.set('display.showInfo', _pageData.display.showInfo);
+	});
 
 	// Lets get some templates
 	function getTemplates(callback) {
@@ -15,24 +57,37 @@ domready(function () {
 			_template = data;
 			
 			// Lets do some Ractive love!
-			r = new Ractive({
+			_r = new Ractive({
 				el: "maincontainer",
 				template: _template,
-				data: {
-					files: myFiles,
-					display: {
-						showRight: false
-					}
-				}
+				data: _pageData
 			});
-			r.on({
+			
+			_r.on({
 				itemClick: function(event) {
-					console.log('whoop!');
+					var id = event.node.getAttribute('data-fileid');
 
+					// Get document info or close...
+					if (_pageData.doc.id===id && _pageData.display.showInfo) {
+						_pageData.display.showInfo = false;
+						_r.set('display.showInfo', _pageData.display.showInfo);
+					} else {
+						_ee.emit('getDocInfo', {
+							id: id
+						});	
+					}
+					
+				},
+				filterClick: function(event) {
+					_pageData.display.showFilter = (_pageData.display.showFilter? false: true);
+					_r.set('display.showFilter', _pageData.display.showFilter);
 				},
 				cogClick: function(event) {
-					this.data.display.showRight = (this.data.display.showRight? false : true);
-					r.set('display.showRight', this.data.display.showRight);
+					
+				},
+				infoClose: function(event) {
+					_pageData.display.showInfo = false;
+					_r.set('display.showInfo', _pageData.display.showInfo);
 				}
 			});
 
@@ -42,23 +97,13 @@ domready(function () {
 	
 	getTemplates(function() {
 		console.log('ractive init');
-		doDB();
-		getAllFiles();
+		doDZ();
+		_ee.emit('getDocs');
 	});
-
-	function getAllFiles() {
-		$.get('/files/_all', function(data) {
-			loadFiles(data);
-		});
-	}
-
-	function loadFiles(data) {
-		r.set('files', data);	
-	}
 
 	var uploadMap = {};
 
-	function doDB() {
+	function doDZ() {
 		var myDropzone = new Dropzone("div.dropzone", {
 			url: "/file/post",
 			maxFilesize: 4, // MB

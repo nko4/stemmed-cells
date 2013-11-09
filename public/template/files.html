@@ -1,31 +1,39 @@
 <div class="row-fluid">
-	<div class="span1 animated slideInLeft pull-left text-center">
-		<button type="button" class="btn fa fa-cog" on-click="cogClick"></button>
+	<div class="span1 animated slideInLeft pull-left text-left">
+		<button type="button" class="btn btn-info fa fa-filter" on-click="filterClick"></button>
 	</div>
 	<div class="span10 text-center animated fadeInDown">
 		<h4>Top Picker</h4>
 	</div>
-	<div class="span1 animated slideInRight pull-right text-center">
-		<button type="button" class="btn fa fa-cog" on-click="cogClick"></button>
+	<div class="span1 animated slideInRight pull-right text-right">
+		<button type="button" class="btn btn-info fa fa-cog" on-click="cogClick"></button>
 	</div>
 </div>
-<div class="row-fluid" style="position: absolute; {{#(display.showRight===true)}}z-index:100;{{/()}} {{#(display.showRight===false)}}z-index:0;{{/()}}">
-	<div class="span4 offset8 well animated {{#(display.showRight===true)}}slideInRight{{/()}} {{#(display.showRight===false)}}slideOutRight{{/()}}">
-		<h4>Big well</h4>
+<div class="row-fluid" style="position: absolute;">
+	
+	<div class="span4 well offset8 animated {{#(display.showInfo===true)}}slideInRight{{/()}} {{#(display.showInfo===false)}}slideOutRight{{/()}}">
+		<button type="button" class="close" on-click="infoClose">&times;&nbsp;&nbsp;</button>
+		<h4>{{doc.name}}</h4>
 		<div class="row-fluid">
 			<ul>
-				<li>Property: ABC1</li>
-				<li>Property: ABC2</li>
+				<li>Category: {{doc.properties.category}}</li>
+				<li>Type: {{doc.properties.type}}</li>
 			</ul>
 		</div>
 	</div>
 </div>
 <div class="row-fluid">
-	<div class="span2 animated slideInLeft">
-		<h4>Left Picker</h4>
+	<div class="span2 well animated {{#(display.showFilter===true)}}slideInLeft{{/()}} {{#(display.showFilter===false)}}slideOutLeft{{/()}}">
+		<button type="button" class="close" on-click="filterClose">&times;&nbsp;&nbsp;</button>
+		<h4>Filter...</h4>
+		<div class="row-fluid">
+			<ul>
+				<li>a</li>
+				<li>b</li>
+			</ul>
+		</div>
 	</div>
 	<div class="span10">
-		<h6>Middle bit</h6>
 		<div class="dropzone animated tada">
 			{{#files:filesIdx}}
 				<div class="dz-preview dz-processing dz-image-preview dz-success" on-click="itemClick" data-fileid="{{id}}" data-fileidx="{{filesIdx}}">

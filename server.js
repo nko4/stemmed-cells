@@ -43,6 +43,10 @@ app.get('/files/_all', function(req, res){
   res.send(results);
 });
 
+app.get('/file/:id', function(req, res){
+  res.send(gFileStore[req.params.id]);
+});
+
 app.post('/file/thumbnail/:id', function(req, res){
   if (gFileStore[req.params.id]) {
     gFileStore[req.params.id].thumbnail = req.body;
