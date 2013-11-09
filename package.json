@@ -13,7 +13,8 @@
   "dependencies": {
     "nko": "*",
     "express": "*",
-    "lodash": "*"
+    "lodash": "*",
+    "domReady": "*"
   },
   "engines": {
     "node": "0.10.x"

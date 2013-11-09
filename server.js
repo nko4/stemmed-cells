@@ -7,6 +7,7 @@ var port = (isProduction ? 80 : 8000);
 var express = require('express')
   , app = express()
   , MemoryStore = express.session.MemoryStore
+  , fs = require('fs')
   ;
 
 app.configure(function(){
@@ -32,6 +33,16 @@ app.get('/test', function(req, res){
 });
 
 // Routes
+app.post('/file/post', function(req, res) {
+  console.log(req.files);
+
+  fs.readFile(req.files.file.path, function (err, data) {
+    var newPath = __dirname + "/uploads/" + req.files.file.name;
+    fs.writeFile(newPath, data, function (err) {
+      res.redirect("back");
+    });
+  });
+});
 
 app.listen(port);
 console.log('Listening on port ' + port);

@@ -14,8 +14,15 @@
 		<link href="/css/flatstrap/bootstrap.css" type="text/css" media="screen" rel="stylesheet"/>
 		<link href="/css/fontawesome/css/font-awesome.min.css" type="text/css" rel="stylesheet">
 
+		<script type="text/javascript" src="/lib/vendor/jquery-2.0.3.min.js"></script>
+		<script type="text/javascript" src="/lib/vendor/Ractive.min.js"></script>
+		<script type="text/javascript" src="/lib/vendor/ready.min.js"></script>
+		<script type="text/javascript" src="/lib/vendor/eventemitter2.js"></script>
+		<script type="text/javascript" src="/lib/vendor/dropzone.js"></script>
+
+		<script type="text/javascript" src="https://cdn.goinstant.net/v1/platform.min.js"></script>
+
 		<script type="text/javascript" src="/lib/main.js"></script>
-	    <script type="text/javascript" src="/lib/Ractive.min.js"></script>
 	</head>
 	
 	<body>
@@ -26,6 +33,9 @@
 					<a class="brand" href="#" style="color:white;">
 						<i class="icon-beaker icon-large" style="font-size:28px; color:#51a351;"></i>  DMS<span style="font-size:0.7em;">.made easy</span>
 					</a>
+					<form class="navbar-form pull-right">
+						<input type="text" placeholder="Realtime" name="name" id="sync" />
+					</form>
 				</div>
 			</div>
 		</div>
@@ -42,6 +52,9 @@
 				</div>
 				<div class="span6">
 					<h4>Middle bit</h4>
+					<form action="/file/post" class="dropzone">
+						<h5>My special drop zone...</h5>
+					</form>
 				</div>
 				<div class="span3">
 					<h4>Right Picker</h4>
