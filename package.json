@@ -11,7 +11,9 @@
     "url": "git@github.com:nko4/stemmed-cells.git"
   },
   "dependencies": {
-    "nko": "*"
+    "nko": "*",
+    "express": "*",
+    "lodash": "*"
   },
   "engines": {
     "node": "0.10.x"
