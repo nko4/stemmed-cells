@@ -59,6 +59,14 @@ domready(function () {
 	_ee.on('gotDocInfo', function(data) {
 		_pageData.doc = data;
 		_r.set('doc', _pageData.doc);
+
+		// Need to reset the properties
+		var temp = _pageData.docProperties;
+		_pageData.docProperties = {};
+		_r.set('docProperties', _pageData.docProperties);
+		_pageData.docProperties = temp;
+		_r.set('docProperties', _pageData.docProperties);
+
 		_pageData.display.showInfo = true;
 		_r.set('display.showInfo', _pageData.display.showInfo);
 	});
@@ -75,6 +83,13 @@ domready(function () {
 			_pageData.display.save.icon = 'fa-save';
 			_r.set('display.save', _pageData.display.save);
 		}, 1000);
+	});
+
+	_ee.on('viewChange', function(data) {
+		_pageData.display.view.grid = (_pageData.display.view.grid? false: true);
+		_pageData.display.view.group = (_pageData.display.view.group? false: true);
+		_r.set('display.view.grid', _pageData.display.view.grid);
+		_r.set('display.view.group', _pageData.display.view.group);
 	});
 
 	// Lets get some templates
@@ -108,8 +123,8 @@ domready(function () {
 					_pageData.display.showFilter = (_pageData.display.showFilter? false: true);
 					_r.set('display.showFilter', _pageData.display.showFilter);
 				},
-				gridView: function(event) {
-					
+				viewChange: function(event) {
+					_ee.emit('viewChange');
 				},
 				infoClose: function(event) {
 					_pageData.display.showInfo = false;
@@ -170,8 +185,8 @@ domready(function () {
 			maxFilesize: 4, // MB
 			createImageThumbnails: true,
 			params: {
-				Category: 'a',
-				Type: 't1'
+				Category: 'category-1',
+				Type: 'type-1'
 			},
 			accept: function(file, done) {
 				if (file.name == "justinbieber.jpg") {
@@ -203,8 +218,9 @@ domready(function () {
 				}
 				if (res) {
 					uploadMap[file.name].obj = res;	
+					if (file.type.indexOf('image')===-1) uploadMap[file.name].src = ""; // not an image!
 				}
-				if (uploadMap[file.name].obj && uploadMap[file.name].src) {
+				if (uploadMap[file.name].obj && uploadMap[file.name].src!==undefined) {
 					var src = uploadMap[file.name].src;
 					uploadMap[file.name] = uploadMap[file.name].obj;
 					uploadMap[file.name].src = src;

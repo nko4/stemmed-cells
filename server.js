@@ -9,6 +9,7 @@ var express = require('express')
   , MemoryStore = express.session.MemoryStore
   , fs = require('fs')
   , uuid = require('node-uuid')
+  , _ = require('lodash')
   ;
 
 var gFileProperties = {
@@ -85,16 +86,22 @@ app.post('/file/thumbnail/:id', function(req, res){
 
 // Routes
 app.post('/file/upload', function(req, res) {
-  console.log(req.files);
-  console.log(req.body);
   var id = uuid.v1();
 
+  var defaults = {
+    Name: '',
+    Category: '',
+    Type: ''    
+  };
+  
+  var properties = _.extend(defaults, req.body);
+  
   gFileStore[id] = {
     id: id,
     name: req.files.file.name,
     size: req.files.file.size,
     location: '/uploads/' + id,
-    properties: req.body
+    properties: properties
   };
   
   res.send(gFileStore[id]);

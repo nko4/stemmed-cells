@@ -5,8 +5,8 @@
 	<div class="span4 text-center animated fadeInDown">
 	</div>
 	<div class="span4 animated slideInRight pull-right text-right">
-		<button type="button" disabled="{{(display.view.group===true)}}" class="btn btn-info fa fa-th-large icon-large" title="Group View" on-click="groupView"></button>
-		<button type="button" disabled="{{(display.view.grid===true)}}" class="btn btn-info fa fa-th icon-large" title="Document View" on-click="gridView"></button>
+		<button type="button" disabled="{{(display.view.group===true)}}" class="btn btn-primary fa fa-th-large icon-large" title="Group View" on-click="viewChange"></button>
+		<button type="button" disabled="{{(display.view.grid===true)}}" class="btn btn-primary fa fa-th icon-large" title="Document View" on-click="viewChange"></button>
 	</div>
 </div>
 
@@ -41,7 +41,7 @@
 	</div>
 </div>
 
-<div style="z-index: 100; position: absolute; left:0px; top:100px; background-color: darkgray;" class="span2 well animated {{#(display.showFilter===true)}}slideInLeft{{/()}} {{#(display.showFilter===false)}}slideOutLeft{{/()}}">
+<div style="z-index: 100; position: absolute; left:0px; top:100px; background-color: darkgray; height: 50%" class="span2 well animated {{#(display.showFilter===true)}}slideInLeft{{/()}} {{#(display.showFilter===false)}}slideOutLeft{{/()}}">
 	<button type="button" class="close" on-click="filterClick">&times;&nbsp;&nbsp;</button>
 	<div class="row-fluid">
 		<p><strong>Filter</strong></p>
@@ -51,18 +51,33 @@
 	</div>
 </div>
 
-<div class="row-fluid">
-	<div class="span12">
-		<div class="dropzone animated tada">
-			{{#files:filesIdx}}
-				<div class="dz-preview dz-processing dz-image-preview dz-success" on-click="itemClick" data-fileid="{{id}}" data-fileidx="{{filesIdx}}">
-					<div class="dz-details">
-						<div class="dz-filename"><span data-dz-name="">{{name}}</span></div>
-						<div class="dz-size" data-dz-size=""><strong>{{(size/1000)}}</strong> KB</div>
-						<img data-dz-thumbnail="" alt="{{name}}" src="{{thumbnail.src}}">
+{{#(display.view.grid===true)}}
+	<div class="row-fluid">
+		<div class="span12">
+			<div class="dropzone animated tada">
+				{{#files:filesIdx}}
+					<div class="dz-preview dz-processing dz-image-preview dz-success" on-click="itemClick" data-fileid="{{id}}" data-fileidx="{{filesIdx}}">
+						<div class="dz-details">
+							<div class="dz-filename"><span data-dz-name="">{{name}}</span></div>
+							<div class="dz-size" data-dz-size=""><strong>{{(size/1000)}}</strong> KB</div>
+							<img data-dz-thumbnail="" alt="{{name}}" src="{{thumbnail.src}}">
+						</div>
 					</div>
-				</div>
-			{{/files}}
+				{{/files}}
+			</div>
 		</div>
 	</div>
-</div>
+{{/()}}
+
+
+{{#(display.view.group===true)}}
+
+	<div class="row-fluid">
+		<div class="span12">
+			<div class="hero-unit">
+				<h2>Category View</h2>
+			</div>
+		</div>
+	</div>
+
+{{/()}}
