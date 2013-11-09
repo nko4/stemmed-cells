@@ -1,16 +1,41 @@
-<div class="dropzone animated tada">
-	<h5>My special drop zone...</h5>
-	{{#files:filesIdx}}
-		<div class="dz-preview dz-processing dz-image-preview dz-success">
-			<div class="dz-details">
-				<div class="dz-filename"><span data-dz-name="">{{name}}</span></div>
-				<div class="dz-size" data-dz-size=""><strong>{{(size/1000)}}</strong> KB</div>
-				<img data-dz-thumbnail="" alt="{{name}}" src="{{thumbnail.src}}">
-			</div>
-			<div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress="" style="width: 100%;"></span></div>
-			<div class="dz-success-mark2"><span>✔</span></div>
-			<div class="dz-error-mark"><span>✘</span></div>
-			<div class="dz-error-message"><span data-dz-errormessage=""></span></div>
+<div class="row-fluid">
+	<div class="span1 animated slideInLeft pull-left text-center">
+		<button type="button" class="btn fa fa-cog" on-click="cogClick"></button>
+	</div>
+	<div class="span10 text-center animated fadeInDown">
+		<h4>Top Picker</h4>
+	</div>
+	<div class="span1 animated slideInRight pull-right text-center">
+		<button type="button" class="btn fa fa-cog" on-click="cogClick"></button>
+	</div>
+</div>
+<div class="row-fluid" style="position: absolute; {{#(display.showRight===true)}}z-index:100;{{/()}} {{#(display.showRight===false)}}z-index:0;{{/()}}">
+	<div class="span4 offset8 well animated {{#(display.showRight===true)}}slideInRight{{/()}} {{#(display.showRight===false)}}slideOutRight{{/()}}">
+		<h4>Big well</h4>
+		<div class="row-fluid">
+			<ul>
+				<li>Property: ABC1</li>
+				<li>Property: ABC2</li>
+			</ul>
 		</div>
-	{{/files}}
+	</div>
+</div>
+<div class="row-fluid">
+	<div class="span2 animated slideInLeft">
+		<h4>Left Picker</h4>
+	</div>
+	<div class="span10">
+		<h6>Middle bit</h6>
+		<div class="dropzone animated tada">
+			{{#files:filesIdx}}
+				<div class="dz-preview dz-processing dz-image-preview dz-success" on-click="itemClick" data-fileid="{{id}}" data-fileidx="{{filesIdx}}">
+					<div class="dz-details">
+						<div class="dz-filename"><span data-dz-name="">{{name}}</span></div>
+						<div class="dz-size" data-dz-size=""><strong>{{(size/1000)}}</strong> KB</div>
+						<img data-dz-thumbnail="" alt="{{name}}" src="{{thumbnail.src}}">
+					</div>
+				</div>
+			{{/files}}
+		</div>
+	</div>
 </div>

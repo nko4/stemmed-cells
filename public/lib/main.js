@@ -16,12 +16,26 @@ domready(function () {
 			
 			// Lets do some Ractive love!
 			r = new Ractive({
-				el: "filelist",
+				el: "maincontainer",
 				template: _template,
 				data: {
-					files: myFiles
+					files: myFiles,
+					display: {
+						showRight: false
+					}
 				}
 			});
+			r.on({
+				itemClick: function(event) {
+					console.log('whoop!');
+
+				},
+				cogClick: function(event) {
+					this.data.display.showRight = (this.data.display.showRight? false : true);
+					r.set('display.showRight', this.data.display.showRight);
+				}
+			});
+
 			callback();
 		});
 	}
@@ -29,12 +43,8 @@ domready(function () {
 	getTemplates(function() {
 		console.log('ractive init');
 		doDB();
+		getAllFiles();
 	});
-
-	function loadFiles(data) {
-		r.set('files', data);	
-	}
-	
 
 	function getAllFiles() {
 		$.get('/files/_all', function(data) {
@@ -42,13 +52,16 @@ domready(function () {
 		});
 	}
 
+	function loadFiles(data) {
+		r.set('files', data);	
+	}
 
 	var uploadMap = {};
 
 	function doDB() {
 		var myDropzone = new Dropzone("div.dropzone", {
 			url: "/file/post",
-			maxFilesize: 2, // MB
+			maxFilesize: 4, // MB
 			createImageThumbnails: true,
 			params: {
 				category: 'the special one',
@@ -109,20 +122,6 @@ domready(function () {
 	}
 	
 	startGI();
-
-	$(".fa-cog").click(function() {
-		$("#bigwell").show();
-
-		if ($("#bigwell").hasClass('slideInRight')) {
-			$("#bigwell").removeClass('slideInRight');
-			$("#bigwell").addClass('slideOutRight');
-		} else {
-			$("#bigwell").removeClass('slideOutRight');
-			$("#bigwell").addClass('slideInRight');
-			getAllFiles();
-		}
-		
-	});
 
 	function createGUID() {
 		var guid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
