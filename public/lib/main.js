@@ -22,6 +22,9 @@ domready(function () {
 		},
 		keys: function(obj) {
 			return Object.keys(obj);
+		},
+		formatDate: function(data) {
+			return moment(data).format("Mo MMM YYYY");
 		}
 	};
 
@@ -33,7 +36,7 @@ domready(function () {
 	// Setup some listeners
 
 	_ee.on('getDocs', function(data) {
-		console.log('Get Documents');	
+		console.log('Get Documents');
 		if (!data) {
 			$.get('/files/_all', function(data) {
 				_ee.emit('gotDocs', data);
@@ -52,7 +55,10 @@ domready(function () {
 
 	_ee.on('gotDocs', function(data) {
 		console.log('Got Documents');	
-		_r.set('files', data);
+		_r.set('files', []);
+		_r.update();
+		_pageData.files = data;
+		_r.set('files', _pageData.files);
 	});
 
 

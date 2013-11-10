@@ -82,8 +82,13 @@ app.get('/files/_search/:search', function(req, res){
       results.push(obj);
     } else {
       var props = JSON.stringify(obj.properties);
-      if (props.indexOf(req.params.search)>-1)
+      if (props.indexOf(req.params.search)>-1) {
         results.push(obj);
+      } else {
+        if (obj.lastModifiedDate && obj.lastModifiedDate.indexOf(req.params.search)>-1) {
+          results.push(obj);
+        }
+      }
     }
   }
   res.send(results);
