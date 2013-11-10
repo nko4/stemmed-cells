@@ -5,6 +5,8 @@
 				<i class="fa fa-briefcase icon-large" style="font-size:28px; color:#51a351;"></i>  <span style="font-size:0.7em;">doc</span>.easy
 			</a>
 			<form class="navbar-form pull-right form-search" style="padding-top:5px;">
+				<label style="color:white;">{{display.notification.text}}</label>
+				<i class="btn btn-inverse fa fa-bell-o icon-large {{#(display.notification.alert===true)}}animated flash{{/()}}" style="background-color: #1b1b1b;"></i>
 				<input type="text" placeholder="Realtime" name="name" id="sync" style="display:none;"/>
 				<input class="span2" type="text" placeholder="Search" on-keyup="SearchDocs">
 				<a href="#" title="Help" class="btn btn-info fa fa-question-circle icon-large"></a>
@@ -30,11 +32,11 @@
 	</div>
 	<div class="span4 animated slideInRight pull-right text-right">
 		<button type="button" disabled="{{(display.view.group===true)}}" class="btn {{#(display.view.group===true)}}btn-success{{/(}}{{#(display.view.group===false)}}btn-primary{{/()}} fa fa-th-large icon-large" title="Category View" on-click="viewChange"></button>
-		<button type="button" disabled="{{(display.view.grid===true)}}" class="btn {{#(display.view.grid===true)}}btn-success{{/(}}{{#(display.view.grid===false)}}btn-primary{{/()}} fa fa-th icon-large" title="Document View" on-click="viewChange"></button>
+		<button type="button" disabled="{{(display.view.grid===true)}}" class="btn {{#(display.view.grid===true)}}btn-success{{/(}}{{#(display.view.grid===false)}}btn-primary{{/()}} fa fa-th icon-large" title="All Documents" on-click="viewChange"></button>
 	</div>
 </div>
 
-<div style="z-index: 100; position: absolute; right:0px; top:100px; background-color: darkgray; opacity: 0.9;" class="span4 well offset8 animated {{#(display.showInfo===true)}}bounceInRight{{/()}} {{#(display.showInfo===false)}}slideOutRight{{/()}}">
+<div style="z-index: 100; position: fixed; right:20px; top:100px; background-color: darkgray; opacity: 0.9;" class="span3 well offset8 animated {{#(display.showInfo===true)}}bounceInRight{{/()}} {{#(display.showInfo===false)}}slideOutRight{{/()}}">
 	<button type="button" class="close" on-click="infoClose">&times;&nbsp;&nbsp;</button>
 	<h4>{{#(doc.properties.lock===true)}}<i class="fa fa-lock icon-large" style="color:#da4f49;"></i>  {{/()}}{{doc.name}}</h4>
 	<div class="row-fluid">
@@ -67,7 +69,7 @@
 	</div>
 </div>
 
-<div style="z-index: 100; position: absolute; left:0px; top:100px; background-color: darkgray; height: 50%; opacity: 0.9;" class="span2 well animated {{#(display.showFilter===true)}}bounceInLeft{{/()}} {{#(display.showFilter===false)}}slideOutLeft{{/()}}">
+<div style="z-index: 100; position: fixed; left:0px; top:100px; background-color: darkgray; height: 50%; opacity: 0.9;" class="span2 well animated {{#(display.showFilter===true)}}bounceInLeft{{/()}} {{#(display.showFilter===false)}}slideOutLeft{{/()}}">
 	<button type="button" class="close" on-click="filterClick">&times;&nbsp;&nbsp;</button>
 	<div class="row-fluid">
 		<p><strong>Filter</strong></p>
@@ -99,6 +101,7 @@
 			</div>
 		</div>
 	</div>
+	<br><br>
 {{/()}}
 
 
@@ -109,7 +112,7 @@
 			{{#(display.groups.category===true)}}
 				{{#(keys(groups.category))}}
 					<div class="dropzone animated bounceInLeft">
-						<h4>{{(categoryLookUp(.).option)}}</h4>
+						<h4>{{(categoryLookUp(.).option)}} <small>({{(groups.category[.].length)}})</small></h4>
 						{{#(groups.category[.])}}
 							<div class="dz-preview dz-processing dz-image-preview dz-success" on-click="itemClick" data-fileid="{{id}}" data-fileidx="{{filesIdx}}">
 								<div class="dz-details">
@@ -126,7 +129,7 @@
 			{{#(display.groups.date===true)}}
 				{{#(sort(keys(groups.lastModifiedDate)))}}
 					<div class="dropzone animated bounceInRight">
-						<h4>{{(formatDate(.,'Do MMMM YYYY'))}}</h4>
+						<h4>{{(formatDate(.,'Do MMMM YYYY'))}} <small>({{(groups.lastModifiedDate[.].length)}})</small></h4>
 						{{#(groups.lastModifiedDate[.])}}
 							<div class="dz-preview dz-processing dz-image-preview dz-success" on-click="itemClick" data-fileid="{{id}}" data-fileidx="{{filesIdx}}">
 								<div class="dz-details">

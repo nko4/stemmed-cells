@@ -13,6 +13,10 @@ domready(function () {
 		display: {
 			showInfo: false,
 			showFilter: false,
+			notification: {
+				alert: false,
+				text: ''
+			},
 			view: {
 				grid: true,
 				group: false
@@ -47,6 +51,7 @@ domready(function () {
 
 	var _template = "";	
 	var _r;
+	var _docNotification;
 
 	var _ee = new EventEmitter2();
 
@@ -170,6 +175,10 @@ domready(function () {
 		//doDZ();
 	});
 
+	_ee.on('docNotification', function(data) {
+		_docNotification.set(data);
+	});
+
 	// Lets get some templates
 	function getTemplates(callback) {
 		$.get('/template/files.html', function(data) {
@@ -241,6 +250,15 @@ domready(function () {
 						}
 					}
 					_r.set('doc', _pageData.doc);
+					
+					// Bit crude but loop through and find doc that has changed
+					for (var i=0; i< _pageData.files.length; i++) {
+						if (_pageData.files[i].id === _pageData.doc.id) {
+							_pageData.files[i] = _pageData.doc;
+							i = _pageData.files.length;
+						}
+					}
+
 					_ee.emit('saveDocInfo', _pageData.doc);
 				}
 			});
@@ -324,7 +342,9 @@ domready(function () {
 						file.previewElement.style.display = 'none';
 						if (res!=='OK') {
 							_pageData.files.push(res);
-							_r.set('files',_pageData.files);	
+							_r.set('files',_pageData.files);
+							_ee.emit('categoryView');	
+							_ee.emit('docNotification', res);
 						} else {
 							// send notification (maximum limit reached)
 						}
@@ -345,16 +365,41 @@ domready(function () {
 			// You are now connected!
 
 			// The listener will be invoked every time the value of name is changed by another user
-			var name = lobby.key('name');
-			var el = $('input[name="name"]');
+			_docNotification = lobby.key('docnotification');
+			
+			_docNotification.on('set', function(value, context) {
+				
+				_pageData.files.push(value);
+				_r.set('files',_pageData.files);
+				_ee.emit('categoryView');
+				_ee.emit('getStats');
+				
+				_pageData.display.notification.alert = true;
+				_r.set('display.notification.alert', _pageData.display.notification.alert);
 
-			name.on('set', function(value, context) {
-				el.val(value);
+				_pageData.display.notification.text = 'New document added';
+				_r.set('display.notification.text', _pageData.display.notification.text);
+					
+				// Reset alerts
+				setTimeout(function() {
+					_pageData.display.notification.alert = true;
+					_r.set('display.notification.alert', _pageData.display.notification.alert);
+
+					_pageData.display.notification.text = '';
+					_r.set('display.notification.text', _pageData.display.notification.text);
+				}, 3000);
 			});
 
-			el.on('keyup', function() {
-				name.set($(this).val());
-			});
+			// var name = lobby.key('name');
+			// var el = $('input[name="name"]');
+
+			// name.on('set', function(value, context) {
+			// 	el.val(value);
+			// });
+
+			// el.on('keyup', function() {
+			// 	name.set($(this).val());
+			// });
 		});	
 	}
 	

@@ -164,10 +164,6 @@ app.post('/file/upload', function(req, res) {
   // });
 });
 
-function doStats() {
-  gFileStoreStats.count = Object.keys(gFileStore).length;
-}
-
 app.post('/file/:id', function(req, res){
   if (gFileStore[req.params.id]) {
     gFileStore[req.params.id] = req.body;
@@ -179,6 +175,12 @@ app.post('/file/:id', function(req, res){
   }
   res.send(gFileStore[req.params.id]);
 });
+
+
+function doStats() {
+  gFileStoreStats.count = Object.keys(gFileStore).length;
+}
+
 
 
 app.listen(port);
