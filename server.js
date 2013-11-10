@@ -38,8 +38,12 @@ var gFileProperties = {
   // }
 };
 
+var gLimit = 1000;
 var gFileStore = {};
-var gFileStoreStats = {};
+var gFileStoreStats = {
+  count: 0,
+  limit: gLimit
+};
 
 app.configure(function(){
   app.use(express.cookieParser()); 
@@ -104,44 +108,51 @@ app.get('/file/:id', function(req, res){
 });
 
 app.post('/file/thumbnail/:id', function(req, res){
-  
-  // Set last modified date
-  if (req.body.lastModifiedDate) {
-    moment.lang('en-gb');
-    gFileStore[req.params.id].lastModifiedDate = moment(req.body.lastModifiedDate.substring(0,15), "ddd MMM DD YYYY").format("YYYY-MM-DD");  
-  }
+  if (gFileStoreStats && gFileStoreStats.count<gLimit) {
+    // Set last modified date
+    if (req.body.lastModifiedDate) {
+      moment.lang('en-gb');
+      gFileStore[req.params.id].lastModifiedDate = moment(req.body.lastModifiedDate.substring(0,15), "ddd MMM DD YYYY").format("YYYY-MM-DD");  
+    }
 
-  if (gFileStore[req.params.id]) {
-    gFileStore[req.params.id].thumbnail = req.body.thumbnail;
+    if (gFileStore[req.params.id]) {
+      gFileStore[req.params.id].thumbnail = req.body.thumbnail;
+    }
+    res.send(gFileStore[req.params.id]);
+  } else {
+    res.send(200);
   }
-  res.send(gFileStore[req.params.id]);
 });
 
 // Routes
 app.post('/file/upload', function(req, res) {
-  var id = uuid.v1();
+  if (gFileStoreStats && gFileStoreStats.count<gLimit) {
+    var id = uuid.v1();
 
-  var defaults = {
-    Name: '',
-    Category: '',
-    Type: '',
-    lock: false
-  };
-  
-  var properties = _.extend(defaults, req.body);
-  
-  
-  gFileStore[id] = {
-    id: id,
-    name: req.files.file.name,
-    size: req.files.file.size,
-    location: '/uploads/' + id,
-    properties: properties
-  };
-  
-  res.send(gFileStore[id]);
+    var defaults = {
+      Name: '',
+      Category: '',
+      Type: '',
+      lock: false
+    };
+    
+    var properties = _.extend(defaults, req.body);
+    
+    
+    gFileStore[id] = {
+      id: id,
+      name: req.files.file.name,
+      size: req.files.file.size,
+      location: '/uploads/' + id,
+      properties: properties
+    };
+    
+    res.send(gFileStore[id]);
 
-  doStats();
+    doStats();  
+  } else {
+    res.send(200);
+  }
   
   //res.redirect("back");
   
@@ -154,9 +165,7 @@ app.post('/file/upload', function(req, res) {
 });
 
 function doStats() {
-  gFileStoreStats = {
-    count: Object.keys(gFileStore).length
-  };
+  gFileStoreStats.count = Object.keys(gFileStore).length;
 }
 
 app.post('/file/:id', function(req, res){

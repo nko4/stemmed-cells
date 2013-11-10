@@ -131,6 +131,7 @@ domready(function () {
 			_pageData.display.save.label = 'Save';
 			_pageData.display.save.icon = 'fa-save';
 			_r.set('display.save', _pageData.display.save);
+			_ee.emit('categoryView');
 		}, 1000);
 	});
 
@@ -140,8 +141,11 @@ domready(function () {
 		_r.set('display.view.grid', _pageData.display.view.grid);
 		_r.set('display.view.group', _pageData.display.view.group);
 
-		if (_pageData.display.view.group)
+		if (_pageData.display.view.group) {
 			_ee.emit('categoryView');
+		} else {
+			doDZ();
+		}
 	});
 
 	_ee.on('groupChange', function(data) {
@@ -163,6 +167,7 @@ domready(function () {
 			lastModifiedDate: groupDate
 		};
 		_r.set('groups', _pageData.groups);
+		//doDZ();
 	});
 
 	// Lets get some templates
@@ -317,8 +322,12 @@ domready(function () {
 
 					$.post('/file/thumbnail/' + uploadMap[file.name].id, uploadMap[file.name], function(res) {
 						file.previewElement.style.display = 'none';
-						_pageData.files.push(res);
-						_r.set('files',_pageData.files);
+						if (res!=='OK') {
+							_pageData.files.push(res);
+							_r.set('files',_pageData.files);	
+						} else {
+							// send notification (maximum limit reached)
+						}
 					});
 
 					_ee.emit('getStats');
