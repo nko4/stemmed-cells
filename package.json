@@ -14,7 +14,6 @@
     "nko": "*",
     "express": "*",
     "lodash": "*",
-    "domReady": "*",
     "node-uuid": "*",
     "moment": "*"
   },
