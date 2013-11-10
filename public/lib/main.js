@@ -4,6 +4,10 @@ domready(function () {
 
 	console.log('dom ready');
 	var _site = "photo";
+	
+	var siteParm = getRequestParameter('site');
+	if (siteParm!=='' && (siteParm==='photo' || 'business')) _site = siteParm;
+
 	var _pageData = {
 		files: [],
 		stats: {},
@@ -22,6 +26,7 @@ domready(function () {
 				group: false
 			},
 			groups: {
+				name: false,
 				category: true,
 				date: false
 			},
@@ -58,7 +63,7 @@ domready(function () {
 	// Setup some listeners
 
 	_ee.on('getStats', function() {
-		$.get('/files/_stats', function(data) {
+		$.get('/' + _site +'/files/_stats', function(data) {
 			_ee.emit('gotStats', data);
 		});	
 	});
@@ -74,7 +79,7 @@ domready(function () {
 	_ee.on('getDocs', function(data) {
 		console.log('Get Documents');
 		if (!data) {
-			$.get('/files/_all', function(data) {
+			$.get('/' + _site + '/files/_all', function(data) {
 				_ee.emit('gotDocs', data);
 			});	
 		}
@@ -83,7 +88,7 @@ domready(function () {
 	_ee.on('searchDocs', function(data) {
 		console.log('Search Documents');	
 		if (data) {
-			$.get('/files/_search/' + data.search, function(data) {
+			$.get('/' + _site + '/files/_search/' + data.search, function(data) {
 				_ee.emit('gotDocs', data);
 			});	
 		}
@@ -101,7 +106,7 @@ domready(function () {
 	});
 
 	_ee.on('getDocInfo', function(data) {
-		$.get('/file/' + data.id, function(data) {
+		$.get('/' + _site + '/file/' + data.id, function(data) {
 			_ee.emit('gotDocInfo', data);	
 		});
 	});
@@ -126,7 +131,7 @@ domready(function () {
 	});
 
 	_ee.on('saveDocInfo', function(data) {
-		$.post('/file/' + data.id, data, function(data) {
+		$.post('/' + _site + '/file/' + data.id, data, function(data) {
 			_ee.emit('savedDocInfo', data);	
 		});
 	});
@@ -154,13 +159,13 @@ domready(function () {
 	});
 
 	_ee.on('groupChange', function(data) {
-		_pageData.display.groups.date = (_pageData.display.groups.date? false: true);
-		_pageData.display.groups.category = (_pageData.display.groups.category? false: true);
-		_r.set('display.groups.date', _pageData.display.groups.date);
-		_r.set('display.groups.category', _pageData.display.groups.category);
+		
 	});
 
 	_ee.on('categoryView', function() {
+		var groupName = _.groupBy(_pageData.files, function(row) {
+			return row.properties.Name;
+		});
 		var groupCat = _.groupBy(_pageData.files, function(row) {
 			return row.properties.Category;
 		});
@@ -168,6 +173,7 @@ domready(function () {
 			return row.lastModifiedDate;
 		});
 		_pageData.groups = {
+			name: groupName,
 			category: groupCat,
 			lastModifiedDate: groupDate
 		};
@@ -225,6 +231,17 @@ domready(function () {
 					_ee.emit('viewChange');
 				},
 				groupChange: function(event) {
+					var grpName = event.node.getAttribute('data-groupname');
+					
+					_pageData.display.groups.name = false;
+					_pageData.display.groups.date = false;
+					_pageData.display.groups.category = false;
+
+					_pageData.display.groups[grpName] = true;					
+
+					_r.set('display.groups.name', _pageData.display.groups.name);
+					_r.set('display.groups.date', _pageData.display.groups.date);
+					_r.set('display.groups.category', _pageData.display.groups.category);
 					_ee.emit('groupChange');
 				},
 				infoClose: function(event) {
@@ -267,8 +284,8 @@ domready(function () {
 		});
 	}
 	
-	function getDocProperties(type, callback) {
-		$.get('/properties/' + type, function(data) {
+	function getDocProperties(callback) {
+		$.get('/' + _site + '/properties/', function(data) {
 			_pageData.docProperties = data;
 			_ee.emit('GotDocProperties');
 			callback();
@@ -278,7 +295,7 @@ domready(function () {
 	_ee.emit('getDocProperties');
 
 	
-	getDocProperties(_site,function() {
+	getDocProperties(function() {
 		getTemplates(function() {
 			console.log('ractive init');
 			doDZ();
@@ -290,7 +307,7 @@ domready(function () {
 
 	function doDZ() {
 		var myDropzone = new Dropzone("div.dropzone", {
-			url: "/file/upload",
+			url: '/' + _site + "/file/upload",
 			dictDefaultMessage: '',
 			maxFilesize: 4, // MB
 			createImageThumbnails: true,
@@ -338,7 +355,7 @@ domready(function () {
 						src: src
 					};
 
-					$.post('/file/thumbnail/' + uploadMap[file.name].id, uploadMap[file.name], function(res) {
+					$.post('/' + _site + '/file/thumbnail/' + uploadMap[file.name].id, uploadMap[file.name], function(res) {
 						file.previewElement.style.display = 'none';
 						if (res!=='OK') {
 							_pageData.files.push(res);
@@ -411,5 +428,16 @@ domready(function () {
 			return v.toString(16);
 		});     
 		return guid;
+	}
+
+	function getRequestParameter(name) {
+		name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+		var regexS = "[\\?&]" + name + "=([^&#]*)";
+		var regex = new RegExp(regexS);
+		var results = regex.exec(window.location.search);
+		if(results == null)
+			return "";
+		else
+			return decodeURIComponent(results[1].replace(/\+/g, " "));
 	}
 });

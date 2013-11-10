@@ -25,13 +25,14 @@
 	<div class="span4 text-center">
 		{{#(display.view.group===true)}}
 		<div class="animated fadeInDown">
-			<button type="button" disabled="{{(display.groups.category===true)}}" class="btn {{#(display.groups.category===true)}}btn-success{{/(}}{{#(display.groups.category===false)}}btn-primary{{/()}} fa fa-th-large icon-large" title="Category View" on-click="groupChange">&nbsp;By Category</button>
-			<button type="button" disabled="{{(display.groups.date===true)}}" class="btn {{#(display.groups.date===true)}}btn-success{{/(}}{{#(display.groups.date===false)}}btn-primary{{/()}} fa fa-th icon-large" title="Date View" on-click="groupChange">&nbsp;By Date</button>
+			<button type="button" data-groupname="name" disabled="{{(display.groups.name===true)}}" class="btn {{#(display.groups.name===true)}}btn-success{{/(}}{{#(display.groups.name===false)}}btn-primary{{/()}} fa fa-th-large icon-large" title="{{docProperties.Name.label}} View" on-click="groupChange">&nbsp;By {{docProperties.Name.label}}</button>
+			<button type="button" data-groupname="category" disabled="{{(display.groups.category===true)}}" class="btn {{#(display.groups.category===true)}}btn-success{{/(}}{{#(display.groups.category===false)}}btn-primary{{/()}} fa fa-th-large icon-large" title="{{docProperties.Category.label}} View" on-click="groupChange">&nbsp;By {{docProperties.Category.label}}</button>
+			<button type="button" data-groupname="date" disabled="{{(display.groups.date===true)}}" class="btn {{#(display.groups.date===true)}}btn-success{{/(}}{{#(display.groups.date===false)}}btn-primary{{/()}} fa fa-th icon-large" title="Date View" on-click="groupChange">&nbsp;By Date</button>
 		</div>
 		{{/()}}
 	</div>
 	<div class="span4 animated slideInRight pull-right text-right">
-		<button type="button" disabled="{{(display.view.group===true)}}" class="btn {{#(display.view.group===true)}}btn-success{{/(}}{{#(display.view.group===false)}}btn-primary{{/()}} fa fa-th-large icon-large" title="Category View" on-click="viewChange"></button>
+		<button type="button" disabled="{{(display.view.group===true)}}" class="btn {{#(display.view.group===true)}}btn-success{{/(}}{{#(display.view.group===false)}}btn-primary{{/()}} fa fa-th-large icon-large" title="Group View" on-click="viewChange"></button>
 		<button type="button" disabled="{{(display.view.grid===true)}}" class="btn {{#(display.view.grid===true)}}btn-success{{/(}}{{#(display.view.grid===false)}}btn-primary{{/()}} fa fa-th icon-large" title="All Documents" on-click="viewChange"></button>
 	</div>
 </div>
@@ -43,7 +44,7 @@
 		<form>
 			<fieldset>
 				{{#(keys(docProperties))}}
-					<label>{{.}}</label>
+					<label>{{docProperties[.].label}}</label>
 					{{#(docProperties[.].type==='input')}}
 						<input disabled="{{(doc.properties.lock)}}" class="input-medium" type="text" id="{{.}}" value="{{doc.properties[.]}}">
 					{{/()}}
@@ -82,7 +83,7 @@
 {{#(display.view.grid===true)}}
 	<div class="row-fluid">
 		<div class="span12">
-			<div class="dropzone animated bounceInUp" style="min-height:360px;">
+			<div class="dropzone animated bounceInDown" style="min-height:360px;">
 				{{#(stats.count===0)}}
 					<div class="text-center">
 						<h3>There are no documents</h3>
@@ -109,9 +110,26 @@
 
 	<div class="row-fluid">
 		<div class="span12 animated ">
+			{{#(display.groups.name===true)}}
+				{{#(keys(groups.name))}}
+					<div class="dropzone animated bounceInLeft">
+						<h4>{{.}} <small>({{(groups.name[.].length)}})</small></h4>
+						{{#(groups.name[.])}}
+							<div class="dz-preview dz-processing dz-image-preview dz-success" on-click="itemClick" data-fileid="{{id}}" data-fileidx="{{filesIdx}}">
+								<div class="dz-details">
+									<div class="dz-filename"><span data-dz-name="">{{name}}</span></div>
+									<div class="dz-size" data-dz-size=""><strong>{{(size/1000)}}</strong> KB</div>
+									<img data-dz-thumbnail="" alt="{{name}}" src="{{thumbnail.src}}">
+								</div>
+							</div>
+						{{/()}}
+					</div>
+					<br>
+				{{/()}}
+			{{/()}}
 			{{#(display.groups.category===true)}}
 				{{#(keys(groups.category))}}
-					<div class="dropzone animated bounceInLeft">
+					<div class="dropzone animated bounceInUp">
 						<h4>{{(categoryLookUp(.).option)}} <small>({{(groups.category[.].length)}})</small></h4>
 						{{#(groups.category[.])}}
 							<div class="dz-preview dz-processing dz-image-preview dz-success" on-click="itemClick" data-fileid="{{id}}" data-fileidx="{{filesIdx}}">

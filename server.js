@@ -15,35 +15,37 @@ var express = require('express')
 
 var gFileProperties = {
   business: {
-      Contact: {
-      type: 'input'
+    Name: {
+      type: 'input',
+      label: 'Contact'
     },
-    'Category': {
+    Category: {
       type: 'select',
+      label: 'Category',
       options: [
         { option: '', value: ''},
         { option: 'Category 1', value: 'category-1'},
         { option: 'Category 2', value: 'category-2'}
       ]
     },
-    'Type': {
+    Type: {
       type: 'select',
+      label: 'Type',
       options: [
         { option: '', value: ''},
-        { option: 'Type 1', value: 'type-1'},
-        { option: 'Type 2', value: 'type-2'}
+        { option: 'Customer', value: 'customer'},
+        { option: 'Supplier', value: 'supplier'}
       ]
     }
-    // 'Date': {
-    //   type: 'date'
-    // }
   },
   photo: {
-      Album: {
-      type: 'input'
+    Name: {
+      type: 'input',
+      label: 'Album'
     },
-    'Category': {
+    Category: {
       type: 'select',
+      label: 'Category',
       options: [
         { option: '', value: ''},
         { option: 'Animals', value: 'animals'},
@@ -56,11 +58,19 @@ var gFileProperties = {
   }
 };
 
-var gLimit = 1000;
-var gFileStore = {};
+var gFileStore = {
+  photo: {},
+  business: {}
+};
 var gFileStoreStats = {
-  count: 0,
-  limit: gLimit
+  photo: {
+    count: 0,
+    limit: 1000
+  },
+  business: {
+    count: 0,
+    limit: 1000
+  }
 };
 
 app.configure(function(){
@@ -78,33 +88,34 @@ app.configure(function(){
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 });
 
-app.get('/test', function(req, res){
-  var body = 'Hello World';
-  res.setHeader('Content-Type', 'text/plain');
-  res.setHeader('Content-Length', body.length);
-  res.end(body);
+app.get('/photo', function(req, res) {
+  res.redirect('/docs.html?site=photo');
 });
 
-app.get('/properties/:type', function(req, res){
-  res.send(gFileProperties[req.params.type]);
+app.get('/business', function(req, res) {
+  res.redirect('/docs.html?site=business');
 });
 
-app.get('/files/_all', function(req, res){
+app.get('/:site/properties', function(req, res){
+  res.send(gFileProperties[req.params.site]);
+});
+
+app.get('/:site/files/_all', function(req, res){
   var results = [];
-  for (var key in gFileStore) {
-    results.push(gFileStore[key]);
+  for (var key in gFileStore[req.params.site]) {
+    results.push(gFileStore[req.params.site][key]);
   }
   res.send(results);
 });
 
-app.get('/files/_stats', function(req, res){
-  res.send(gFileStoreStats);
+app.get('/:site/files/_stats', function(req, res){
+  res.send(gFileStoreStats[req.params.site]);
 });
 
-app.get('/files/_search/:search', function(req, res){
+app.get('/:site/files/_search/:search', function(req, res){
   var results = [];
-  for (var key in gFileStore) {
-    var obj = gFileStore[key];
+  for (var key in gFileStore[req.params.site]) {
+    var obj = gFileStore[req.params.site][key];
     if (obj.name.indexOf(req.params.search)>-1) {
       results.push(obj);
     } else {
@@ -121,30 +132,30 @@ app.get('/files/_search/:search', function(req, res){
   res.send(results);
 });
 
-app.get('/file/:id', function(req, res){
-  res.send(gFileStore[req.params.id]);
+app.get('/:site/file/:id', function(req, res){
+  res.send(gFileStore[req.params.site][req.params.id]);
 });
 
-app.post('/file/thumbnail/:id', function(req, res){
-  if (gFileStoreStats && gFileStoreStats.count<gLimit) {
+app.post('/:site/file/thumbnail/:id', function(req, res){
+  if (gFileStoreStats[req.params.site] && gFileStoreStats[req.params.site].count<gFileStoreStats[req.params.site].limit) {
     // Set last modified date
     if (req.body.lastModifiedDate) {
       moment.lang('en-gb');
-      gFileStore[req.params.id].lastModifiedDate = moment(req.body.lastModifiedDate.substring(0,15), "ddd MMM DD YYYY").format("YYYY-MM-DD");  
+      gFileStore[req.params.site][req.params.id].lastModifiedDate = moment(req.body.lastModifiedDate.substring(0,15), "ddd MMM DD YYYY").format("YYYY-MM-DD");  
     }
 
-    if (gFileStore[req.params.id]) {
-      gFileStore[req.params.id].thumbnail = req.body.thumbnail;
+    if (gFileStore[req.params.site][req.params.id]) {
+      gFileStore[req.params.site][req.params.id].thumbnail = req.body.thumbnail;
     }
-    res.send(gFileStore[req.params.id]);
+    res.send(gFileStore[req.params.site][req.params.id]);
   } else {
     res.send(200);
   }
 });
 
 // Routes
-app.post('/file/upload', function(req, res) {
-  if (gFileStoreStats && gFileStoreStats.count<gLimit) {
+app.post('/:site/file/upload', function(req, res) {
+  if (gFileStoreStats[req.params.site] && gFileStoreStats[req.params.site].count<gFileStoreStats[req.params.site].limit) {
     var id = uuid.v1();
 
     var defaults = {
@@ -157,17 +168,17 @@ app.post('/file/upload', function(req, res) {
     var properties = _.extend(defaults, req.body);
     
     
-    gFileStore[id] = {
+    gFileStore[req.params.site][id] = {
       id: id,
       name: req.files.file.name,
       size: req.files.file.size,
-      location: '/uploads/' + id,
+      location: '/uploads/' + req.params.site + '/' + id,
       properties: properties
     };
     
-    res.send(gFileStore[id]);
+    res.send(gFileStore[req.params.site][id]);
 
-    doStats();  
+    doStats(req.params.site);  
   } else {
     res.send(200);
   }
@@ -182,23 +193,22 @@ app.post('/file/upload', function(req, res) {
   // });
 });
 
-app.post('/file/:id', function(req, res){
-  if (gFileStore[req.params.id]) {
-    gFileStore[req.params.id] = req.body;
-    if (gFileStore[req.params.id].properties.lock==='true') {
-      gFileStore[req.params.id].properties.lock = true;
+app.post('/:site/file/:id', function(req, res){
+  if (gFileStore[req.params.site][req.params.id]) {
+    gFileStore[req.params.site][req.params.id] = req.body;
+    if (gFileStore[req.params.site][req.params.id].properties.lock==='true') {
+      gFileStore[req.params.site][req.params.id].properties.lock = true;
     } else {
-      gFileStore[req.params.id].properties.lock = false;
+      gFileStore[req.params.site][req.params.id].properties.lock = false;
     }
   }
-  res.send(gFileStore[req.params.id]);
+  res.send(gFileStore[req.params.site][req.params.id]);
 });
 
 
-function doStats() {
-  gFileStoreStats.count = Object.keys(gFileStore).length;
+function doStats(site) {
+  gFileStoreStats[site].count = Object.keys(gFileStore[site]).length;
 }
-
 
 
 app.listen(port);
