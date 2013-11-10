@@ -49,6 +49,9 @@ domready(function () {
 		},
 		categoryLookUp: function(val) {
 			return _.find(_pageData.docProperties.Category.options, function(row) { return row.value===val; })
+		},
+		removeSpaces: function(val) {
+			return val.replace(/\s/g,'');
 		}
 	};
 
@@ -339,7 +342,7 @@ domready(function () {
 	var uploadMap = {};
 
 	function doDZ(id, field, value) {
-
+		id = id.replace(/\s/g,''); // remove all spaces
 		var options = {
 			url: '/' + _site + "/file/upload",
 			dictDefaultMessage: '',

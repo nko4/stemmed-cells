@@ -114,7 +114,7 @@
 		<div class="span12 animated ">
 			{{#(display.groups.name===true)}}
 				{{#(keys(groups.name))}}
-					<div id="dropzone-{{.}}" class="dropzone animated bounceInLeft">
+					<div id="dropzone-{{(removeSpaces(.))}}" class="dropzone animated bounceInLeft">
 						<h4>{{.}} <small>({{(groups.name[.].length)}})</small></h4>
 						{{#(groups.name[.])}}
 							<div class="dz-preview dz-processing dz-image-preview dz-success" on-click="itemClick" data-fileid="{{id}}" data-fileidx="{{filesIdx}}">
@@ -131,7 +131,7 @@
 			{{/()}}
 			{{#(display.groups.category===true)}}
 				{{#(keys(groups.category))}}
-					<div id="dropzone-{{.}}" class="dropzone animated bounceInUp">
+					<div id="dropzone-{{(removeSpaces(.))}}" class="dropzone animated bounceInUp">
 						<h4>{{(categoryLookUp(.).option)}} <small>({{(groups.category[.].length)}})</small></h4>
 						{{#(groups.category[.])}}
 							<div class="dz-preview dz-processing dz-image-preview dz-success" on-click="itemClick" data-fileid="{{id}}" data-fileidx="{{filesIdx}}">
