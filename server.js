@@ -24,8 +24,15 @@ var gFileProperties = {
       label: 'Category',
       options: [
         { option: '', value: ''},
-        { option: 'Category 1', value: 'category-1'},
-        { option: 'Category 2', value: 'category-2'}
+        { option: 'Suppliers', value: 'suppliers'},
+        { option: 'Partners', value: 'partners'},
+        { option: 'Creditors', value: 'creditors'},
+        { option: 'Shareholders', value: 'shareholders'},
+        { option: 'Customers', value: 'customers'},
+        { option: 'Employees', value: 'employees'},
+        { option: 'Directors', value: 'directors'},
+        { option: 'Investors', value: 'investors'},
+        { option: 'Misc 3rd Party', value: 'miscparty'}
       ]
     },
     Type: {
@@ -33,8 +40,13 @@ var gFileProperties = {
       label: 'Type',
       options: [
         { option: '', value: ''},
-        { option: 'Customer', value: 'customer'},
-        { option: 'Supplier', value: 'supplier'}
+        { option: 'Purchase Orders', value: 'purchaseorder'},
+        { option: 'Requisitions', value: 'requisitions'},
+        { option: 'Invoices', value: 'invoices'},
+        { option: 'Receipts', value: 'receipts'},
+        { option: 'Media', value: 'media'},
+        { option: 'Emails', value: 'emails'},
+        { option: 'Misc', value: 'misc'}
       ]
     }
   },
@@ -153,7 +165,6 @@ app.post('/:site/file/thumbnail/:id', function(req, res){
   }
 });
 
-// Routes
 app.post('/:site/file/upload', function(req, res) {
   if (gFileStoreStats[req.params.site] && gFileStoreStats[req.params.site].count<gFileStoreStats[req.params.site].limit) {
     var id = uuid.v1();
@@ -205,6 +216,14 @@ app.post('/:site/file/:id', function(req, res){
   res.send(gFileStore[req.params.site][req.params.id]);
 });
 
+app.get('/:site/file/:id/_delete', function(req, res){
+  if (gFileStore[req.params.site][req.params.id]) {
+    if (!gFileStore[req.params.site][req.params.id].properties.lock) {
+      delete gFileStore[req.params.site][req.params.id];
+    }
+  }
+  res.send(200);
+});
 
 function doStats(site) {
   gFileStoreStats[site].count = Object.keys(gFileStore[site]).length;

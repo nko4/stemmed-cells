@@ -2,6 +2,8 @@
 
 domready(function () {
 
+	Dropzone.autoDiscover = false;
+
 	console.log('dom ready');
 	var _site = "photo";
 	
@@ -142,7 +144,23 @@ domready(function () {
 			_pageData.display.save.icon = 'fa-save';
 			_r.set('display.save', _pageData.display.save);
 			_ee.emit('categoryView');
+			_ee.emit('groupChange');
 		}, 1000);
+	});
+
+	
+	_ee.on('deleteDoc', function(data) {
+		$.get('/' + _site + '/file/' + data.id + '/_delete', function(res) {
+			// Bit crude but loop through and find doc that has changed
+			for (var i=0; i< _pageData.files.length; i++) {
+				if (_pageData.files[i].id === data.id) {
+					_pageData.files.splice(i,1);
+					i = _pageData.files.length;
+				}
+			}
+			_ee.emit('categoryView');
+			_ee.emit('groupChange');
+		});
 	});
 
 	_ee.on('viewChange', function(data) {
@@ -153,13 +171,23 @@ domready(function () {
 
 		if (_pageData.display.view.group) {
 			_ee.emit('categoryView');
+			_ee.emit('groupChange');
 		} else {
-			doDZ();
+			doDZ('grid-dropzone');
 		}
 	});
 
 	_ee.on('groupChange', function(data) {
-		
+		if (_pageData.display.groups.category) {
+			for (var key in _pageData.groups.category) {
+				doDZ('dropzone-' + key, 'Category', key);	
+			}
+		}
+		if (_pageData.display.groups.name) {
+			for (var key in _pageData.groups.name) {
+				doDZ('dropzone-' + key, 'Name', key);	
+			}
+		}
 	});
 
 	_ee.on('categoryView', function() {
@@ -178,7 +206,6 @@ domready(function () {
 			lastModifiedDate: groupDate
 		};
 		_r.set('groups', _pageData.groups);
-		//doDZ();
 	});
 
 	_ee.on('docNotification', function(data) {
@@ -277,6 +304,12 @@ domready(function () {
 					}
 
 					_ee.emit('saveDocInfo', _pageData.doc);
+				},
+				infoDelete: function(event) {
+					_pageData.display.showInfo = false;
+					_r.set('display.showInfo', _pageData.display.showInfo);
+
+					_ee.emit('deleteDoc', _pageData.doc);	
 				}
 			});
 
@@ -298,22 +331,21 @@ domready(function () {
 	getDocProperties(function() {
 		getTemplates(function() {
 			console.log('ractive init');
-			doDZ();
+			doDZ('grid-dropzone');
 			_ee.emit('getDocs');
 		});
 	});
 
 	var uploadMap = {};
 
-	function doDZ() {
-		var myDropzone = new Dropzone("div.dropzone", {
+	function doDZ(id, field, value) {
+
+		var options = {
 			url: '/' + _site + "/file/upload",
 			dictDefaultMessage: '',
 			maxFilesize: 4, // MB
 			createImageThumbnails: true,
 			params: {
-				Category: 'category-1',
-				Type: 'type-1'
 			},
 			accept: function(file, done) {
 				if (file.name == "justinbieber.jpg") {
@@ -322,54 +354,62 @@ domready(function () {
 					done();
 				}
 			}
-		});
+		};
+		if (field && value) {
+			options.params[field] = value;
+		}
+		// If not already attached to a dropzone
+		if (!$("#" + id).hasClass('dz-clickable')) {
+			var myDropzone = new Dropzone("#" + id, options);
 
-		myDropzone.on('thumbnail', function(file, url) {
-			console.log('***** thumbnail');
-			save(file, url);
-		});
+			myDropzone.on('thumbnail', function(file, url) {
+				console.log('***** thumbnail');
+				save(file, url);
+			});
 
-		myDropzone.on('sending', function(file, xhr, formdata) {
-			//console.log(formdata);
-		});
+			myDropzone.on('sending', function(file, xhr, formdata) {
+				//console.log(formdata);
+			});
 
-		myDropzone.on('success', function(file, res) {
-			console.log('***** success');	
-			save(file, null, res);
-		});
-		function save(file, url, res) {
-			(function() {
-				uploadMap[file.name] = uploadMap[file.name] || {};
-				if (url) {
-					uploadMap[file.name].src = url;	
-				}
-				if (res) {
-					uploadMap[file.name].obj = res;	
-					uploadMap[file.name].obj.lastModifiedDate = file.lastModifiedDate;
-					if (file.type.indexOf('image')===-1) uploadMap[file.name].src = ""; // not an image!
-				}
-				if (uploadMap[file.name].obj && uploadMap[file.name].src!==undefined) {
-					var src = uploadMap[file.name].src;
-					uploadMap[file.name] = uploadMap[file.name].obj;
-					uploadMap[file.name].thumbnail = {
-						src: src
-					};
+			myDropzone.on('success', function(file, res) {
+				console.log('***** success');	
+				save(file, null, res);
+			});
+			
+			function save(file, url, res) {
+				(function() {
+					uploadMap[file.name] = uploadMap[file.name] || {};
+					if (url) {
+						uploadMap[file.name].src = url;	
+					}
+					if (res) {
+						uploadMap[file.name].obj = res;	
+						uploadMap[file.name].obj.lastModifiedDate = file.lastModifiedDate;
+						if (file.type.indexOf('image')===-1) uploadMap[file.name].src = ""; // not an image!
+					}
+					if (uploadMap[file.name].obj && uploadMap[file.name].src!==undefined) {
+						var src = uploadMap[file.name].src;
+						uploadMap[file.name] = uploadMap[file.name].obj;
+						uploadMap[file.name].thumbnail = {
+							src: src
+						};
 
-					$.post('/' + _site + '/file/thumbnail/' + uploadMap[file.name].id, uploadMap[file.name], function(res) {
-						file.previewElement.style.display = 'none';
-						if (res!=='OK') {
-							_pageData.files.push(res);
-							_r.set('files',_pageData.files);
-							_ee.emit('categoryView');	
-							_ee.emit('docNotification', res);
-						} else {
-							// send notification (maximum limit reached)
-						}
-					});
+						$.post('/' + _site + '/file/thumbnail/' + uploadMap[file.name].id, uploadMap[file.name], function(res) {
+							file.previewElement.style.display = 'none';
+							if (res!=='OK') {
+								_pageData.files.push(res);
+								_r.set('files',_pageData.files);
+								_ee.emit('categoryView');	
+								_ee.emit('docNotification', res);
+							} else {
+								// send notification (maximum limit reached)
+							}
+						});
 
-					_ee.emit('getStats');
-				}
-			})();
+						_ee.emit('getStats');
+					}
+				})();
+			}
 		}
 	}
 
