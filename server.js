@@ -14,28 +14,46 @@ var express = require('express')
   ;
 
 var gFileProperties = {
-  'Name': {
-    type: 'input'
+  business: {
+      Contact: {
+      type: 'input'
+    },
+    'Category': {
+      type: 'select',
+      options: [
+        { option: '', value: ''},
+        { option: 'Category 1', value: 'category-1'},
+        { option: 'Category 2', value: 'category-2'}
+      ]
+    },
+    'Type': {
+      type: 'select',
+      options: [
+        { option: '', value: ''},
+        { option: 'Type 1', value: 'type-1'},
+        { option: 'Type 2', value: 'type-2'}
+      ]
+    }
+    // 'Date': {
+    //   type: 'date'
+    // }
   },
-  'Category': {
-    type: 'select',
-    options: [
-      { option: '', value: ''},
-      { option: 'Category 1', value: 'category-1'},
-      { option: 'Category 2', value: 'category-2'}
-    ]
-  },
-  'Type': {
-    type: 'select',
-    options: [
-      { option: '', value: ''},
-      { option: 'Type 1', value: 'type-1'},
-      { option: 'Type 2', value: 'type-2'}
-    ]
+  photo: {
+      Album: {
+      type: 'input'
+    },
+    'Category': {
+      type: 'select',
+      options: [
+        { option: '', value: ''},
+        { option: 'Animals', value: 'animals'},
+        { option: 'Industrial', value: 'industrial'},
+        { option: 'Nature', value: 'nature'},
+        { option: 'People', value: 'people'},
+        { option: 'Transportation', value: 'transportation'}
+      ]
+    }
   }
-  // 'Date': {
-  //   type: 'date'
-  // }
 };
 
 var gLimit = 1000;
@@ -67,8 +85,8 @@ app.get('/test', function(req, res){
   res.end(body);
 });
 
-app.get('/properties', function(req, res){
-  res.send(gFileProperties);
+app.get('/properties/:type', function(req, res){
+  res.send(gFileProperties[req.params.type]);
 });
 
 app.get('/files/_all', function(req, res){

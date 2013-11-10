@@ -3,7 +3,7 @@
 domready(function () {
 
 	console.log('dom ready');
-
+	var _site = "photo";
 	var _pageData = {
 		files: [],
 		stats: {},
@@ -267,8 +267,8 @@ domready(function () {
 		});
 	}
 	
-	function getDocProperties(callback) {
-		$.get('/properties', function(data) {
+	function getDocProperties(type, callback) {
+		$.get('/properties/' + type, function(data) {
 			_pageData.docProperties = data;
 			_ee.emit('GotDocProperties');
 			callback();
@@ -278,7 +278,7 @@ domready(function () {
 	_ee.emit('getDocProperties');
 
 	
-	getDocProperties(function() {
+	getDocProperties(_site,function() {
 		getTemplates(function() {
 			console.log('ractive init');
 			doDZ();
