@@ -6,14 +6,20 @@ domready(function () {
 
 	var _pageData = {
 		files: [],
+		stats: {},
 		doc: {},
 		docProperties: {},
+		groups: {},
 		display: {
 			showInfo: false,
 			showFilter: false,
 			view: {
 				grid: true,
 				group: false
+			},
+			groups: {
+				category: true,
+				date: false
 			},
 			save: {
 				label: 'Save',
@@ -23,10 +29,21 @@ domready(function () {
 		keys: function(obj) {
 			return Object.keys(obj);
 		},
-		formatDate: function(data) {
-			return moment(data).format("Mo MMM YYYY");
+		sort: function(obj) {
+			return obj.sort().reverse();
+		},
+		formatDate: function(data, format) {
+			var format = format || "Mo MMM YYYY";
+			return moment(data).format(format);
+		},
+		categoryLookUp: function(val) {
+			return _.find(_pageData.docProperties.Category.options, function(row) { return row.value===val; })
 		}
 	};
+
+	setTimeout(function() {
+		$("#vote").addClass('shake');
+	}, 5000);
 
 	var _template = "";	
 	var _r;
@@ -35,6 +52,20 @@ domready(function () {
 
 	// Setup some listeners
 
+	_ee.on('getStats', function() {
+		$.get('/files/_stats', function(data) {
+			_ee.emit('gotStats', data);
+		});	
+	});
+
+	_ee.on('gotStats', function(data) {
+		console.log('Got Stats');	
+		_r.set('stats', []);
+		_r.update();
+		_pageData.stats = data;
+		_r.set('stats', _pageData.stats);
+	});
+	
 	_ee.on('getDocs', function(data) {
 		console.log('Get Documents');
 		if (!data) {
@@ -59,8 +90,10 @@ domready(function () {
 		_r.update();
 		_pageData.files = data;
 		_r.set('files', _pageData.files);
-	});
 
+		_ee.emit('getStats');
+
+	});
 
 	_ee.on('getDocInfo', function(data) {
 		$.get('/file/' + data.id, function(data) {
@@ -106,6 +139,30 @@ domready(function () {
 		_pageData.display.view.group = (_pageData.display.view.group? false: true);
 		_r.set('display.view.grid', _pageData.display.view.grid);
 		_r.set('display.view.group', _pageData.display.view.group);
+
+		if (_pageData.display.view.group)
+			_ee.emit('categoryView');
+	});
+
+	_ee.on('groupChange', function(data) {
+		_pageData.display.groups.date = (_pageData.display.groups.date? false: true);
+		_pageData.display.groups.category = (_pageData.display.groups.category? false: true);
+		_r.set('display.groups.date', _pageData.display.groups.date);
+		_r.set('display.groups.category', _pageData.display.groups.category);
+	});
+
+	_ee.on('categoryView', function() {
+		var groupCat = _.groupBy(_pageData.files, function(row) {
+			return row.properties.Category;
+		});
+		var groupDate = _.groupBy(_pageData.files, function(row) {
+			return row.lastModifiedDate;
+		});
+		_pageData.groups = {
+			category: groupCat,
+			lastModifiedDate: groupDate
+		};
+		_r.set('groups', _pageData.groups);
 	});
 
 	// Lets get some templates
@@ -152,6 +209,9 @@ domready(function () {
 				},
 				viewChange: function(event) {
 					_ee.emit('viewChange');
+				},
+				groupChange: function(event) {
+					_ee.emit('groupChange');
 				},
 				infoClose: function(event) {
 					_pageData.display.showInfo = false;
@@ -230,7 +290,7 @@ domready(function () {
 		});
 
 		myDropzone.on('sending', function(file, xhr, formdata) {
-			console.log(formdata);
+			//console.log(formdata);
 		});
 
 		myDropzone.on('success', function(file, res) {
@@ -260,6 +320,8 @@ domready(function () {
 						_pageData.files.push(res);
 						_r.set('files',_pageData.files);
 					});
+
+					_ee.emit('getStats');
 				}
 			})();
 		}

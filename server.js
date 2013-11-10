@@ -39,6 +39,7 @@ var gFileProperties = {
 };
 
 var gFileStore = {};
+var gFileStoreStats = {};
 
 app.configure(function(){
   app.use(express.cookieParser()); 
@@ -72,6 +73,10 @@ app.get('/files/_all', function(req, res){
     results.push(gFileStore[key]);
   }
   res.send(results);
+});
+
+app.get('/files/_stats', function(req, res){
+  res.send(gFileStoreStats);
 });
 
 app.get('/files/_search/:search', function(req, res){
@@ -136,6 +141,8 @@ app.post('/file/upload', function(req, res) {
   
   res.send(gFileStore[id]);
 
+  doStats();
+  
   //res.redirect("back");
   
   // fs.readFile(req.files.file.path, function (err, data) {
@@ -145,6 +152,12 @@ app.post('/file/upload', function(req, res) {
   //   });
   // });
 });
+
+function doStats() {
+  gFileStoreStats = {
+    count: Object.keys(gFileStore).length
+  };
+}
 
 app.post('/file/:id', function(req, res){
   if (gFileStore[req.params.id]) {
