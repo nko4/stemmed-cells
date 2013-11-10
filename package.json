@@ -15,7 +15,8 @@
     "express": "*",
     "lodash": "*",
     "domReady": "*",
-    "node-uuid": "*"
+    "node-uuid": "*",
+    "moment": "*"
   },
   "engines": {
     "node": "0.10.x"

@@ -1,16 +1,34 @@
+<div class="navbar navbar-inverse navbar-fixed-top">
+	<div class="navbar-inner">
+		<div class="container-fluid">
+			<a class="brand" href="#" style="color:white;">
+				<i class="fa fa-briefcase icon-large" style="font-size:28px; color:#51a351;"></i>  <span style="font-size:0.7em;">doc</span>.easy
+			</a>
+			<form class="navbar-form pull-right form-search" style="padding-top:5px;">
+				<input type="text" placeholder="Realtime" name="name" id="sync" style="display:none;"/>
+				<input class="span2" type="text" placeholder="Search" on-keyup="SearchDocs">
+				<a href="#" title="Help" class="btn btn-info fa fa-question-circle icon-large"></a>
+			</form>
+
+		</div>
+	</div>
+</div>
+
+<div class="shifttop container-fluid">
+
 <div class="row-fluid">
 	<div class="span4 animated slideInLeft pull-left text-left">
-		<button type="button" class="btn btn-info fa fa-filter icon-large" on-click="filterClick"></button>
+		<button type="button" class="btn {{#(display.showFilter===true)}}btn-success{{/(}}{{#(display.showFilter===false)}}btn-primary{{/()}} fa fa-filter icon-large" title="Filter" on-click="filterClick"></button>
 	</div>
 	<div class="span4 text-center animated fadeInDown">
 	</div>
 	<div class="span4 animated slideInRight pull-right text-right">
-		<button type="button" disabled="{{(display.view.group===true)}}" class="btn btn-primary fa fa-th-large icon-large" title="Group View" on-click="viewChange"></button>
-		<button type="button" disabled="{{(display.view.grid===true)}}" class="btn btn-primary fa fa-th icon-large" title="Document View" on-click="viewChange"></button>
+		<button type="button" disabled="{{(display.view.group===true)}}" class="btn {{#(display.view.group===true)}}btn-success{{/(}}{{#(display.view.group===false)}}btn-primary{{/()}} fa fa-th-large icon-large" title="Category View" on-click="viewChange"></button>
+		<button type="button" disabled="{{(display.view.grid===true)}}" class="btn {{#(display.view.grid===true)}}btn-success{{/(}}{{#(display.view.grid===false)}}btn-primary{{/()}} fa fa-th icon-large" title="Document View" on-click="viewChange"></button>
 	</div>
 </div>
 
-<div style="z-index: 100; position: absolute; right:0px; top:100px; background-color: darkgray;" class="span4 well offset8 animated {{#(display.showInfo===true)}}slideInRight{{/()}} {{#(display.showInfo===false)}}slideOutRight{{/()}}">
+<div style="z-index: 100; position: absolute; right:0px; top:100px; background-color: darkgray; opacity: 0.9;" class="span4 well offset8 animated {{#(display.showInfo===true)}}bounceInRight{{/()}} {{#(display.showInfo===false)}}slideOutRight{{/()}}">
 	<button type="button" class="close" on-click="infoClose">&times;&nbsp;&nbsp;</button>
 	<h4>{{#(doc.properties.lock===true)}}<i class="fa fa-lock icon-large" style="color:#da4f49;"></i>  {{/()}}{{doc.name}}</h4>
 	<div class="row-fluid">
@@ -32,16 +50,18 @@
 						<input disabled="{{(doc.properties.lock)}}" class="input-medium" id="{{.}}" type="text" value="{{doc.properties[.]}}">
 					{{/()}}
 				{{/()}}<br>
-				{{^(doc.properties.lock===false)}}
+				{{#(doc.properties.lock===false)}}
 					<button type="button" class="btn btn-success" on-click="infoSave"><i class="fa {{display.save.icon}}"></i>&nbsp;&nbsp;{{display.save.label}}</button>
-					<button type="button" class="btn btn-danger"><i class="fa fa-lock">&nbsp;&nbsp;Lock</i></button>
+					<button type="button" class="btn btn-inverse" on-click="infoLock"><i class="fa fa-lock">&nbsp;&nbsp;Lock</i></button>
 				{{/()}}
 			</fieldset>
+			<br>
+			<p><small>Creation Date: {{doc.lastModifiedDate}}</small></p>
 		</form>
 	</div>
 </div>
 
-<div style="z-index: 100; position: absolute; left:0px; top:100px; background-color: darkgray; height: 50%" class="span2 well animated {{#(display.showFilter===true)}}slideInLeft{{/()}} {{#(display.showFilter===false)}}slideOutLeft{{/()}}">
+<div style="z-index: 100; position: absolute; left:0px; top:100px; background-color: darkgray; height: 50%; opacity: 0.9;" class="span2 well animated {{#(display.showFilter===true)}}bounceInLeft{{/()}} {{#(display.showFilter===false)}}slideOutLeft{{/()}}">
 	<button type="button" class="close" on-click="filterClick">&times;&nbsp;&nbsp;</button>
 	<div class="row-fluid">
 		<p><strong>Filter</strong></p>
@@ -54,7 +74,13 @@
 {{#(display.view.grid===true)}}
 	<div class="row-fluid">
 		<div class="span12">
-			<div class="dropzone animated tada">
+			<div class="dropzone animated fadeIn" style="min-height:360px;">
+				{{#(files.length===0)}}
+					<div class="text-center">
+						<h3>There are no documents</h3>
+						<h5>Drag some documents onto the page</h5>
+					</div>
+				{{/()}}
 				{{#files:filesIdx}}
 					<div class="dz-preview dz-processing dz-image-preview dz-success" on-click="itemClick" data-fileid="{{id}}" data-fileidx="{{filesIdx}}">
 						<div class="dz-details">
@@ -73,7 +99,7 @@
 {{#(display.view.group===true)}}
 
 	<div class="row-fluid">
-		<div class="span12">
+		<div class="span12 animated fadeIn">
 			<div class="hero-unit">
 				<h2>Category View</h2>
 			</div>
@@ -81,3 +107,4 @@
 	</div>
 
 {{/()}}
+</div>

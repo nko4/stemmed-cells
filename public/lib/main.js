@@ -12,7 +12,8 @@ domready(function () {
 			showInfo: false,
 			showFilter: false,
 			view: {
-				grid: true
+				grid: true,
+				group: false
 			},
 			save: {
 				label: 'Save',
@@ -35,6 +36,15 @@ domready(function () {
 		console.log('Get Documents');	
 		if (!data) {
 			$.get('/files/_all', function(data) {
+				_ee.emit('gotDocs', data);
+			});	
+		}
+	});
+
+	_ee.on('searchDocs', function(data) {
+		console.log('Search Documents');	
+		if (data) {
+			$.get('/files/_search/' + data.search, function(data) {
 				_ee.emit('gotDocs', data);
 			});	
 		}
@@ -105,6 +115,17 @@ domready(function () {
 			});
 			
 			_r.on({
+				SearchDocs: function(event) {
+					if (event.original.which===13) {
+						if (event.node.value==="") {
+							_ee.emit('getDocs');
+						} else {
+							_ee.emit('searchDocs', {
+								search: event.node.value
+							});	
+						}
+					}
+				},
 				itemClick: function(event) {
 					var id = event.node.getAttribute('data-fileid');
 
@@ -218,18 +239,21 @@ domready(function () {
 				}
 				if (res) {
 					uploadMap[file.name].obj = res;	
+					uploadMap[file.name].obj.lastModifiedDate = file.lastModifiedDate;
 					if (file.type.indexOf('image')===-1) uploadMap[file.name].src = ""; // not an image!
 				}
 				if (uploadMap[file.name].obj && uploadMap[file.name].src!==undefined) {
 					var src = uploadMap[file.name].src;
 					uploadMap[file.name] = uploadMap[file.name].obj;
-					uploadMap[file.name].src = src;
+					uploadMap[file.name].thumbnail = {
+						src: src
+					};
 
 					$.post('/file/thumbnail/' + uploadMap[file.name].id, uploadMap[file.name], function(res) {
 						file.previewElement.style.display = 'none';
 						_pageData.files.push(res);
 						_r.set('files',_pageData.files);
-					});	
+					});
 				}
 			})();
 		}

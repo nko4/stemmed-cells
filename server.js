@@ -10,6 +10,7 @@ var express = require('express')
   , fs = require('fs')
   , uuid = require('node-uuid')
   , _ = require('lodash')
+  , moment = require('moment')
   ;
 
 var gFileProperties = {
@@ -73,13 +74,35 @@ app.get('/files/_all', function(req, res){
   res.send(results);
 });
 
+app.get('/files/_search/:search', function(req, res){
+  var results = [];
+  for (var key in gFileStore) {
+    var obj = gFileStore[key];
+    if (obj.name.indexOf(req.params.search)>-1) {
+      results.push(obj);
+    } else {
+      var props = JSON.stringify(obj.properties);
+      if (props.indexOf(req.params.search)>-1)
+        results.push(obj);
+    }
+  }
+  res.send(results);
+});
+
 app.get('/file/:id', function(req, res){
   res.send(gFileStore[req.params.id]);
 });
 
 app.post('/file/thumbnail/:id', function(req, res){
+  
+  // Set last modified date
+  if (req.body.lastModifiedDate) {
+    moment.lang('en-gb');
+    gFileStore[req.params.id].lastModifiedDate = moment(req.body.lastModifiedDate.substring(0,15), "ddd MMM DD YYYY").format("YYYY-MM-DD");  
+  }
+
   if (gFileStore[req.params.id]) {
-    gFileStore[req.params.id].thumbnail = req.body;
+    gFileStore[req.params.id].thumbnail = req.body.thumbnail;
   }
   res.send(gFileStore[req.params.id]);
 });
@@ -91,10 +114,12 @@ app.post('/file/upload', function(req, res) {
   var defaults = {
     Name: '',
     Category: '',
-    Type: ''    
+    Type: '',
+    lock: false
   };
   
   var properties = _.extend(defaults, req.body);
+  
   
   gFileStore[id] = {
     id: id,
@@ -119,6 +144,11 @@ app.post('/file/upload', function(req, res) {
 app.post('/file/:id', function(req, res){
   if (gFileStore[req.params.id]) {
     gFileStore[req.params.id] = req.body;
+    if (gFileStore[req.params.id].properties.lock==='true') {
+      gFileStore[req.params.id].properties.lock = true;
+    } else {
+      gFileStore[req.params.id].properties.lock = false;
+    }
   }
   res.send(gFileStore[req.params.id]);
 });
